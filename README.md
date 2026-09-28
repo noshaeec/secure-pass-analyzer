@@ -22,7 +22,7 @@ It does **not** attempt to cover network-level attacks (e.g. credential stuffing
 - [x] `PasswordRule` interface + concrete rules: `LengthRule`, `BlocklistRule`, `CharacterVarietyRule` (advisory)
 - [ ] Further rules: dictionary/name check, entropy estimate
 - [x] `PasswordAnalyzer` — aggregates rule results into a strength score/report
-- [ ] `BreachChecker` — integrates with the HIBP API using k-anonymity (only a 5-character SHA-1 hash prefix is ever sent, never the password itself)
+- [x] `BreachChecker` — integrates with the HIBP API using k-anonymity (only a 5-character SHA-1 hash prefix is ever sent, never the password itself)
 - [ ] `HashingDemo` — compares plaintext/weak hashing vs. bcrypt with salt, for educational purposes
 - [x] Unit tests (JUnit 5) for the analyzer and rules; more to come with the breach checker
 
@@ -40,7 +40,7 @@ It does **not** attempt to cover network-level attacks (e.g. credential stuffing
 
 - Java 21
 - Maven
-- [OkHttp](https://square.github.io/okhttp/) — HTTP client for the HIBP API
+- Java's built-in `java.net.http.HttpClient` — HTTP client for the HIBP API
 - [jBCrypt](https://www.mindrot.org/projects/jBCrypt/) — password hashing demo
 - JUnit 5 — testing
 

@@ -5,6 +5,9 @@ import com.noxolo.passwordsecurity.analyzer.CharacterVarietyRule;
 import com.noxolo.passwordsecurity.analyzer.LengthRule;
 import com.noxolo.passwordsecurity.analyzer.PasswordAnalyzer;
 import com.noxolo.passwordsecurity.analyzer.PasswordRule;
+import com.noxolo.passwordsecurity.breach.BreachCheckException;
+import com.noxolo.passwordsecurity.breach.BreachChecker;
+import com.noxolo.passwordsecurity.breach.HttpHibpClient;
 
 import java.io.BufferedReader;
 import java.io.Console;
@@ -26,6 +29,24 @@ public class Main {
         String password = readPassword();
         PasswordAnalyzer.AnalysisReport report = analyzer.analyze(password);
         report.print();
+
+        printBreachStatus(password);
+    }
+
+    private static void printBreachStatus(String password) {
+        BreachChecker checker = new BreachChecker(new HttpHibpClient());
+        try {
+            BreachChecker.BreachResult result = checker.check(password);
+            if (result.breached()) {
+                System.out.println("[FAIL] Found in known data breaches " + result.count()
+                        + " times - do not use this password");
+            } else {
+                System.out.println("[PASS] Not found in known data breaches");
+            }
+        } catch (BreachCheckException e) {
+            // Never report "safe" when the check didn't actually run.
+            System.out.println("[SKIP] Breach check unavailable: " + e.getMessage());
+        }
     }
 
     /**
