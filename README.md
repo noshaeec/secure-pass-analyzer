@@ -23,8 +23,8 @@ It does **not** attempt to cover network-level attacks (e.g. credential stuffing
 - [ ] Further rules: dictionary/name check, entropy estimate
 - [x] `PasswordAnalyzer` — aggregates rule results into a strength score/report
 - [x] `BreachChecker` — integrates with the HIBP API using k-anonymity (only a 5-character SHA-1 hash prefix is ever sent, never the password itself)
-- [ ] `HashingDemo` — compares plaintext/weak hashing vs. bcrypt with salt, for educational purposes
-- [x] Unit tests (JUnit 5) for the analyzer and rules; more to come with the breach checker
+- [x] `HashingDemo` — compares plaintext/weak hashing vs. bcrypt with salt, for educational purposes
+- [x] Unit tests (JUnit 5) for the analyzer, rules, breach checker and hashing demo
 
 ## Design decisions
 
