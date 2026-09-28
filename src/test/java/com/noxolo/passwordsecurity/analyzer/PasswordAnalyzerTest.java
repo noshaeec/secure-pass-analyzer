@@ -64,4 +64,50 @@ class PasswordAnalyzerTest {
         PasswordAnalyzer analyzer = new PasswordAnalyzer(List.of(new LengthRule(8)));
         assertEquals(0, analyzer.analyze(null).score());
     }
+
+    /** Test rule with a fixed outcome. */
+    private static PasswordRule fixed(PasswordRule.Outcome outcome) {
+        return new PasswordRule() {
+            @Override
+            public boolean isSatisfiedBy(String password) {
+                return outcome == Outcome.PASS;
+            }
+
+            @Override
+            public Outcome evaluate(String password) {
+                return outcome;
+            }
+
+            @Override
+            public String getDescription() {
+                return "fixed " + outcome;
+            }
+        };
+    }
+
+    @Test
+    void failedRequiredRuleThatIsNotLengthStillLowersTheScore() {
+        PasswordAnalyzer analyzer = new PasswordAnalyzer(
+                List.of(new LengthRule(8), fixed(PasswordRule.Outcome.FAIL)));
+
+        assertEquals(50, analyzer.analyze("longenoughpassword").score());
+    }
+
+    @Test
+    void unavailableRuleIsSkippedAndNotScored() {
+        PasswordAnalyzer analyzer = new PasswordAnalyzer(
+                List.of(new LengthRule(8), fixed(PasswordRule.Outcome.UNAVAILABLE)));
+
+        PasswordAnalyzer.AnalysisReport report = analyzer.analyze("longenoughpassword");
+
+        assertEquals(100, report.score());
+        assertTrue(report.ruleResults().get(1).unavailable());
+        assertFalse(report.ruleResults().get(1).passed());
+    }
+
+    @Test
+    void ordinaryRulesAreNeverMarkedUnavailable() {
+        PasswordAnalyzer analyzer = new PasswordAnalyzer(List.of(new LengthRule(8)));
+        assertFalse(analyzer.analyze("short").ruleResults().get(0).unavailable());
+    }
 }

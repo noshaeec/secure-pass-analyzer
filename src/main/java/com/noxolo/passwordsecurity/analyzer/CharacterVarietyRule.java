@@ -36,7 +36,7 @@ public class CharacterVarietyRule implements PasswordRule {
 
     @Override
     public String getDescription() {
-        return "Tip: mixing uppercase, lowercase, digits and symbols can add strength (optional, not required)";
+        return "Uses a mix of uppercase, lowercase, digits and symbols (optional, not required)";
     }
 
     @Override

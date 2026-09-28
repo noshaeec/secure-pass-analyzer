@@ -10,6 +10,8 @@ import java.util.List;
  *
  * Advisory rules (see PasswordRule.isAdvisory) appear in the report as
  * tips but are left out of the score, in line with NIST SP 800-63B Rev 4.
+ * Rules that could not run (Outcome.UNAVAILABLE) are reported as skipped and
+ * are also left out of the score.
  */
 public class PasswordAnalyzer {
 
@@ -31,11 +33,13 @@ public class PasswordAnalyzer {
         int requiredPassed = 0;
 
         for (PasswordRule rule : rules) {
-            boolean passed = rule.isSatisfiedBy(password);
+            PasswordRule.Outcome outcome = rule.evaluate(password);
+            boolean passed = outcome == PasswordRule.Outcome.PASS;
+            boolean unavailable = outcome == PasswordRule.Outcome.UNAVAILABLE;
             boolean advisory = rule.isAdvisory();
-            results.add(new RuleResult(rule.getDescription(), passed, advisory));
+            results.add(new RuleResult(rule.getDescription(), passed, advisory, unavailable));
 
-            if (!advisory) {
+            if (!advisory && !unavailable) {
                 required++;
                 if (passed) {
                     requiredPassed++;
@@ -50,18 +54,20 @@ public class PasswordAnalyzer {
     /**
      * Result of a single rule check.
      */
-    public record RuleResult(String description, boolean passed, boolean advisory) {}
+    public record RuleResult(String description, boolean passed, boolean advisory, boolean unavailable) {}
 
     /**
      * Full analysis output: individual rule results plus an overall score (0-100)
-     * calculated from the non-advisory rules only.
+     * calculated from the non-advisory rules that could run.
      */
     public record AnalysisReport(List<RuleResult> ruleResults, int score) {
 
         public void print() {
             for (RuleResult result : ruleResults) {
                 String status;
-                if (result.passed()) {
+                if (result.unavailable()) {
+                    status = "SKIP";
+                } else if (result.passed()) {
                     status = "PASS";
                 } else if (result.advisory()) {
                     status = "TIP ";

@@ -30,4 +30,20 @@ public interface PasswordRule {
     default boolean isAdvisory() {
         return false;
     }
+
+    /**
+     * Result of running a rule: it passed, it failed, or it could not be
+     * evaluated (for example a network lookup was unavailable).
+     */
+    enum Outcome { PASS, FAIL, UNAVAILABLE }
+
+    /**
+     * Evaluates the password and reports whether the rule passed, failed or
+     * could not run. Rules that can fail to run (such as the breach check)
+     * override this. UNAVAILABLE results are shown but never scored, so an
+     * outage can neither raise nor lower the score.
+     */
+    default Outcome evaluate(String password) {
+        return isSatisfiedBy(password) ? Outcome.PASS : Outcome.FAIL;
+    }
 }
