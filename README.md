@@ -19,17 +19,22 @@ It does **not** attempt to cover network-level attacks (e.g. credential stuffing
 ## Features
 
 - [x] Project scaffold (Maven, package structure)
-- [ ] `PasswordRule` interface + concrete rules (length, character mix, dictionary check, entropy)
-- [ ] `PasswordAnalyzer` — aggregates rule results into a strength score/report
+- [x] `PasswordRule` interface + concrete rules: `LengthRule`, `BlocklistRule`, `CharacterVarietyRule` (advisory)
+- [ ] Further rules: dictionary/name check, entropy estimate
+- [x] `PasswordAnalyzer` — aggregates rule results into a strength score/report
 - [ ] `BreachChecker` — integrates with the HIBP API using k-anonymity (only a 5-character SHA-1 hash prefix is ever sent, never the password itself)
 - [ ] `HashingDemo` — compares plaintext/weak hashing vs. bcrypt with salt, for educational purposes
-- [ ] Unit tests (JUnit 5)
+- [x] Unit tests (JUnit 5) for the analyzer and rules; more to come with the breach checker
 
 ## Design decisions
 
 - **Rule-based architecture (`PasswordRule` interface)**: each check (length, entropy, dictionary match, etc.) is implemented as its own class behind a common interface. This makes it easy to add or remove checks without touching the core analyzer logic — an example of the Open/Closed Principle in practice.
 - **No raw password logging**: at no point does the tool write a raw password to disk, logs, or console output beyond the immediate strength report. This is a deliberate design constraint, not an oversight.
 - **k-anonymity for breach checking**: rather than sending a full password (or even its full hash) to a third-party API, only the first 5 characters of its SHA-1 hash are sent. HIBP returns all hash suffixes matching that prefix, and the match is confirmed locally. This means the actual password — or even a reversible representation of it — never leaves the machine.
+
+- **Aligned with NIST SP 800-63B Rev 4 rather than classic complexity rules**: length and blocklist screening carry the score. `LengthRule` provides `nistSingleFactor()` (15 characters) and `nistWithMfa()` (8 characters), and counts Unicode code points. `BlocklistRule` rejects common passwords, look-alike substitutions (`P@ssw0rd`), repeated characters and keyboard/alphabet runs. `CharacterVarietyRule` is *advisory*: Rev 4 prohibits requiring particular character types, so it shows a tip but never lowers the score. A long all-lowercase passphrase can therefore score 100.
+- **Advisory rules**: `PasswordRule.isAdvisory()` (default `false`) lets a rule give a hint without counting towards the score.
+- **Password input**: `Main` reads the password from a hidden console prompt (or stdin when piped), never from command-line arguments, which would end up in shell history.
 
 ## Tech stack
 
@@ -61,6 +66,6 @@ src/main/java/com/noxolo/passwordsecurity/
 ## Limitations
 
 - This is a learning/portfolio project, not a production-hardened security library — it hasn't undergone external security review.
-- Dictionary checks currently rely on a limited local wordlist rather than a comprehensive breach corpus.
+- The blocklist is a small local sample (`common-passwords.txt`), not a comprehensive breach corpus. It does not yet catch names or dictionary words, so a password built from a name (such as `J0n@than#81`) can pass the blocklist and is only caught by the length rule. The planned `BreachChecker` (HIBP) will cover this gap.
 
 ## License

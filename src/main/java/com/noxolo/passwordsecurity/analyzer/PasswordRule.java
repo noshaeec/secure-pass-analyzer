@@ -3,7 +3,7 @@ package com.noxolo.passwordsecurity.analyzer;
 /**
  * Represents a single password validation check.
  * Each implementation encapsulates one rule (e.g. minimum length,
- * character variety, dictionary match) and reports whether the
+ * blocklist match, character variety) and reports whether the
  * password satisfies it, plus a human-readable explanation.
  */
 public interface PasswordRule {
@@ -21,4 +21,13 @@ public interface PasswordRule {
      * used when generating the strength report.
      */
     String getDescription();
+
+    /**
+     * Advisory rules give the user a hint but never count against the score.
+     * NIST SP 800-63B Rev 4 prohibits requiring particular character types,
+     * so composition checks should be advisory rather than mandatory.
+     */
+    default boolean isAdvisory() {
+        return false;
+    }
 }
