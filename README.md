@@ -91,9 +91,7 @@ src/main/java/com/noxolo/passwordsecurity/
 ├── Main.java
 ├── analyzer/   # Password strength rules and scoring
 ├── breach/     # HIBP breach-checking integration
-├── hashing/    # Hashing demo (plaintext vs bcrypt)
-└── util/       # Report generation and shared helpers
-```
+└── hashing/    # Hashing demo (plaintext vs bcrypt)```
 
 ## Limitations
 
