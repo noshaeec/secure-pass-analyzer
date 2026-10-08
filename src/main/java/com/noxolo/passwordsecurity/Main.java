@@ -2,12 +2,14 @@ package com.noxolo.passwordsecurity;
 
 import com.noxolo.passwordsecurity.analyzer.BlocklistRule;
 import com.noxolo.passwordsecurity.analyzer.CharacterVarietyRule;
+import com.noxolo.passwordsecurity.analyzer.ContextWordRule;
 import com.noxolo.passwordsecurity.analyzer.LengthRule;
 import com.noxolo.passwordsecurity.analyzer.PasswordAnalyzer;
 import com.noxolo.passwordsecurity.analyzer.PasswordRule;
 import com.noxolo.passwordsecurity.breach.BreachChecker;
 import com.noxolo.passwordsecurity.breach.BreachRule;
 import com.noxolo.passwordsecurity.breach.HttpHibpClient;
+
 
 import java.io.BufferedReader;
 import java.io.Console;
@@ -17,10 +19,18 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Main {
+
+
+    /**
+     * Any command-line arguments are treated as context words (for example a
+     * username or the service name) that the password must not be built from.
+     * The password itself is never taken from the arguments.
+     */
     public static void main(String[] args) throws IOException {
         List<PasswordRule> rules = List.of(
                 LengthRule.nistSingleFactor(),
                 new BlocklistRule(),
+                new ContextWordRule(Arrays.asList(args)),
                 new BreachRule(new BreachChecker(new HttpHibpClient())),
                 new CharacterVarietyRule()
         );

@@ -20,7 +20,7 @@ It does **not** attempt to cover network-level attacks (e.g. credential stuffing
 
 - [x] Project scaffold (Maven, package structure)
 - [x] `PasswordRule` interface + concrete rules: `LengthRule`, `BlocklistRule`, `CharacterVarietyRule` (advisory)
-- [ ] Further rules: dictionary/name check, entropy estimate
+- [ ] Entropy estimate: deliberately not implemented (see Design decisions)
 - [x] `PasswordAnalyzer` — aggregates rule results into a strength score/report
 - [x] `BreachChecker` — integrates with the HIBP API using k-anonymity (only a 5-character SHA-1 hash prefix is ever sent, never the password itself)
 - [x] `HashingDemo` — compares plaintext/weak hashing vs. bcrypt with salt, for educational purposes
@@ -34,6 +34,9 @@ It does **not** attempt to cover network-level attacks (e.g. credential stuffing
 - **Aligned with NIST SP 800-63B Rev 4 rather than classic complexity rules**: length and blocklist screening carry the score. `LengthRule` provides `nistSingleFactor()` (15 characters) and `nistWithMfa()` (8 characters), and counts Unicode code points. `BlocklistRule` rejects common passwords, look-alike substitutions (`P@ssw0rd`), repeated characters and keyboard/alphabet runs. `CharacterVarietyRule` is *advisory*: Rev 4 prohibits requiring particular character types, so it shows a tip but never lowers the score. A long all-lowercase passphrase can therefore score 100.
 - **Advisory rules**: `PasswordRule.isAdvisory()` (default `false`) lets a rule give a hint without counting towards the score.
 - **Password input**: `Main` reads the password from a hidden console prompt (or stdin when piped), never from command-line arguments, which would end up in shell history.
+- **`ContextWordRule` takes its context in the constructor, not through `PasswordRule`**: NIST Rev 4 asks for passwords built from the username, the service name or a common word to be rejected. Passing the context words to the rule's constructor keeps the `PasswordRule` interface unchanged, so existing rules and tests are untouched. `Main` accepts the words as optional arguments.
+- **A passphrase of ordinary words must still pass**: the dictionary check only fails a password that is a single common name or word plus decoration (`Summer2024!`, `J0n@than#81`). A context word such as the username fails a password only when fewer than 8 other letters remain, so a long passphrase that mentions it still passes.
+- **No entropy estimate**: a simple length-times-character-set estimate rates `Password1234!` as strong, and NIST warns against relying on it. Doing it properly needs a pattern-aware approach such as zxcvbn, which is out of scope here.
 - **The breach check is a required rule, so it counts towards the score**: `BreachRule` wraps `BreachChecker` behind the same `PasswordRule` interface. A password found in a known breach is unsafe however long it looks, so it lowers the score like any other failed rule.
 - **A failed lookup is skipped, never treated as safe**: `PasswordRule.evaluate()` can return `PASS`, `FAIL` or `UNAVAILABLE`. If the HIBP request cannot complete, the report shows `[SKIP]` and the rule is left out of the score, so an outage can neither raise nor lower it.
 - **Built-in `HttpClient` instead of a library**: the breach check is a single GET request, so the JDK's `java.net.http.HttpClient` is enough and avoids an extra dependency to keep patched. The HTTP call sits behind a small `HibpClient` interface so the logic is unit tested without the network.
