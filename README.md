@@ -100,7 +100,7 @@ src/main/java/com/noxolo/passwordsecurity/
 ## Limitations
 
 - This is a learning/portfolio project, not a production-hardened security library — it hasn't undergone external security review.
-- The blocklist is a small local sample (`common-passwords.txt`), not a comprehensive breach corpus. It does not yet catch names or dictionary words, so a password built from a name (such as `J0n@than#81`) can pass the blocklist and is only caught by the length rule. The `BreachChecker` (HIBP) now catches such passwords when they appear in a known breach, but a name-based password that has not been breached can still pass; a dedicated dictionary/name rule is planned.
+- The blocklist is a small local sample (`common-passwords.txt`), not a comprehensive breach corpus. `ContextWordRule` and the dictionary check catch passwords built from a single common name or word plus decoration (such as `J0n@than#81`), but only for the names and words in their small local lists. The `BreachChecker` (HIBP) adds coverage for passwords that appear in known breaches. A password built from a name that is in neither list can still pass.
 
 ## License
 
