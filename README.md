@@ -105,3 +105,5 @@ src/main/java/com/noxolo/passwordsecurity/
 ## License
 
 See [LICENSE](LICENSE).
+
+WTC-MGKQ2CP6
